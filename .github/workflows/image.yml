@@ -8,7 +8,7 @@ env:
   aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY}}
   secrets.AWS_REGION: ${{secrets.AWS_REGION}}
   aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
-  IMAGE_TAG: v2
+  IMAGE_TAG: v1
   
 jobs:
   build:
