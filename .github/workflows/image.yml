@@ -1,0 +1,45 @@
+name: Docker Image CI
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+  
+env:
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY}}
+  secrets.AWS_REGION: ${{secrets.AWS_REGION}}
+  IMAGE_TAG: v1
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY}}
+          aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+           
+    - name: Build Docker image 
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+       docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}} .
+    
+    - name: Push Docker image to ECR
+      id: push-image
+      env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+          echo "Pushing image to ECR..."
+          docker push ${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}"
