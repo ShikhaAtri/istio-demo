@@ -29,6 +29,6 @@ jobs:
       run: |
           aws eks --region ${{ secrets.AWS_REGION }} describe-cluster --name ${{ secrets.AWS_CLUSTER_NAME }} --query cluster.status
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.AWS_CLUSTER_NAME }}
-           - kubectl get all
-           - kubectl apply -f 
+          kubectl get all
+          kubectl apply -f 
 
