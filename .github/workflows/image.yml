@@ -25,10 +25,10 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
     - name: Login in EKS && Deploying yaml file to EKS Cluster
-      working-directory: /home/runner/work/istio-demo/istio-demo/k8s/
+      working-directory: /home/runner/work/istio-demo/istio-demo/k8s
       run: |
           aws eks --region ${{ secrets.AWS_REGION }} describe-cluster --name ${{ secrets.AWS_CLUSTER_NAME }} --query cluster.status
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.AWS_CLUSTER_NAME }}
           kubectl get all
-          kubectl apply .
+          kubectl apply -f istio-demo/k8s
 
