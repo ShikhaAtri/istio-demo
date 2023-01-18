@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      id: app
+      type: main
+  template:
+    metadata:
+      labels:
+        id: app
+        type: main
+    spec:
+      containers:
+      - image: 903461563814.dkr.ecr.ap-south-1.amazonaws.com/istio-demo:v1
+        name: app
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
