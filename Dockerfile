@@ -1,17 +1,15 @@
-FROM python:3.7.12-buster
-
+FROM python:3.7.12-slim-buster
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-RUN apt-get -qq update
-RUN apt-get install -qqy \
-    curl \
-    python-dev \
-    python-setuptools \
-    git
+RUN apt-get -qqy update && apt-get install -qqy \
+        curl \
+        python-dev \
+        python-setuptools \
+        git && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY . /usr/src/app
 RUN pip install -r requirements.txt
 EXPOSE 5000
 ENTRYPOINT ["python3", "src/app.py"]
-
