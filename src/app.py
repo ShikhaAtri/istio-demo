@@ -8,7 +8,7 @@ CORS(app)
 @app.route('/')
 def action():
     return jsonify({
-        'label': 'Sample Deployment'
+        'label': 'VERSION 1'
     }), 200
 
 
