@@ -1,0 +1,90 @@
+# deployment-manifest.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio-injection: enabled
+  name: canary-deployment  # update the namespace here
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoapp-v1
+  namespace: canary-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demoapp
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: demoapp
+        version: v1
+    spec:
+      containers:
+      - image: 954678508118.dkr.ecr.ap-south-1.amazonaws.com/canary-istio-demo:v1  #update the image name here
+        imagePullPolicy: IfNotPresent
+        name: demo-app-v1
+        ports:
+        - containerPort: 5000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: demoapp
+  name: demoapp
+  namespace: canary-deployment
+spec:
+  ports:
+  - port: 80
+    name: http
+    targetPort: 5000
+    protocol: TCP
+  selector:
+    app: demoapp
+  type: ClusterIP
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: demoapp-gateway
+  namespace: canary-deployment
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - canary-deployment.test.cloudtechner.com  # Update the hostname here
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: demoapp-virtualservice
+  namespace: canary-deployment
+spec:
+  gateways:
+    - demoapp-gateway
+  hosts:
+    - 'canary-deployment.test.cloudtechner.com'
+  http:
+    - route:
+        - destination:
+            host: demoapp.canary-deployment.svc.cluster.local  # Update the service name here
+            port:
+              number: 80
