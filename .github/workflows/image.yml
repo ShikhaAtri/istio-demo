@@ -22,22 +22,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY}}
           aws-region: ${{ secrets.AWS_REGION }}
           aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
-    
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-           
-    - name: Build Docker image 
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+    - name: Stable Version Deployment
+      working-directory: /home/runner/work/istio-demo/istio-demo/k8s
       run: |
-       docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}} .
-    
-    - name: Push Docker image to ECR
-      id: push-image
-      env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          aws eks --region ${{ secrets.AWS_REGION }} describe-cluster --name ${{ secrets.AWS_CLUSTER_NAME }} --query cluster.status
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.AWS_CLUSTER_NAME }}
+          kubectl get all
+          kubectl apply -f deployment-manifest.yaml
+    - name: Canary version Deployments
+      working-directory: /home/runner/work/istio-demo/istio-demo/k8s
       run: |
-          echo "Pushing image to ECR..."
-          docker push ${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}
-          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}"
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.AWS_CLUSTER_NAME }}
+          kubectl get all
+          kubectl apply -f canary-deployment-manifest.yaml
